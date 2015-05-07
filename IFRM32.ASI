@@ -1,0 +1,54 @@
+; FONT: Western European > OEM-US
+B       EQU     <BYTE PTR>
+W       EQU     <WORD PTR>
+D       EQU     <DWORD PTR>
+F       EQU     <FWORD PTR>
+SúB     EQU     <SMALL BYTE PTR>
+SúW     EQU     <SMALL WORD PTR>
+SúD     EQU     <SMALL DWORD PTR>
+SúF     EQU     <SMALL FWORD PTR>
+LúB     EQU     <LARGE BYTE PTR>
+LúW     EQU     <LARGE WORD PTR>
+LúD     EQU     <LARGE DWORD PTR>
+LúF     EQU     <LARGE FWORD PTR>
+
+O       EQU     <OFFSET>
+SúO     EQU     <SMALL OFFSET>
+LúO     EQU     <LARGE OFFSET>
+S       EQU     <SMALL>
+L       EQU     <LARGE>
+
+CS16    EQU     <DW 0A8CDh>
+CS32    EQU     <DW 0A9CDh>
+SS16    EQU     <DW 0ACCDh>
+SS32    EQU     <DW 0ADCDh>
+
+ZEROSEL EQU     iFâM32ùGDTEÿZERO - iFâM32ùGDT
+CS32SEL EQU     iFâM32ùGDTEÿCS32 - iFâM32ùGDT
+CS16SEL EQU     iFâM32ùGDTEÿCS16 - iFâM32ùGDT
+FLATSEL EQU     iFâM32ùGDTEÿFLAT - iFâM32ùGDT
+CODESEL EQU     iFâM32ùGDTEÿCODE - iFâM32ùGDT
+DATASEL EQU     iFâM32ùGDTEÿDATA - iFâM32ùGDT
+
+GDTE            STRUC
+                DW      ?
+GDTEÿBASE       DD      ?
+GDTE            ENDS
+
+oso     EQU     <DB 066h>
+
+CS32SEG¯CS16SEG MACRO
+CS32SEG ENDS
+CS16SEG SEGMENT
+        ENDM
+CS16SEG¯CS32SEG MACRO
+CS16SEG ENDS
+CS32SEG SEGMENT
+        ENDM
+
+GENERICúIRQ     MACRO   n
+INT&n:          DB      0CDh,0A8h,0CDh,0&n,0CDh,0A9h,066h,0CFh
+                ENDM
+GENERICúINT     MACRO   n
+INT&n:          DB      0CDh,0A8h,0CDh,0&n,0CDh,0A9h,066h,0CAh,2,0
+                ENDM

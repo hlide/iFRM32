@@ -1,0 +1,50 @@
+﻿INT B0h AH = 125-127 - UNDOCUMENTED FUNCTIONS
+	" installation check ", " get entry point " & " set entry point " for INT B0h
+  not tested yet
+
+
+INT B0h AX = 03h - ALLOCATE DOS MEMORY BLOCK:
+  IN :
+    ds = segment de base à partir duquel
+         sera exprimé eax
+    bx = nombre en paragraphe à allouer
+  OUT :
+    si cf = 0 :
+    dx = segment du bloc alloué
+    ds:eax = adresse du bloc alloué
+
+INT B0h AX = 04h - RELEASE DOS MEMORY BLOCK:
+  IN :
+    dx = segment du bloc à libérer
+  OUT :
+    cf = 0 si ok
+
+INT B0h AX = 05h - RESIZE DOS MEMORY BLOCK:
+  IN :
+    dx = segment du bloc à modifier
+    bx = nombre en paragraphe à modifier
+  OUT :
+    cf = 0 si ok
+
+INT B0h AH = 6 - GET IDTP :
+  IN :
+    ds = segment de base à partir duquel
+         seront exprimés esi et edi
+  OUT :
+    ds:esi = adresse de base de la table d'interruptions 32-bit
+    ds:edi = adresse de base de la table d'interruptions 16-bit ( pile 16-bit )
+    ds:ebx = adresse de base de la table d'interruptions 16-bit ( pile 32-bit )
+
+INT B0h AH = 7 - SET IDTP :
+  IN :
+    ds = segment de base à partir duquel
+         seront exprimés esi et edi
+    ds:esi = nouvelle adresse de base de la table d'interruptions 32-bit
+    ds:edi = nouvelle adresse de base de la table d'interruptions 16-bit ( pile 16-bit )
+    ds:ebx = nouvelle adresse de base de la table d'interruptions 16-bit ( pile 32-bit )
+  OUT :
+    ds:esi = ancienne adresse de base de la table d'interruptions 32-bit
+    ds:edi = ancienne adresse de base de la table d'interruptions 16-bit ( pile 16-bit )
+    ds:ebx = ancienne adresse de base de la table d'interruptions 16-bit ( pile 32-bit )
+
+

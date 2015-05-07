@@ -1,0 +1,437 @@
+﻿
+              ·
+              ∙ ▀▀▀   ▄█████ ███▀▀█▄    ▄███▄███▄  ▄▀▀█▄ ▄▀▀█▄ ·
+              : ███  ▐██▀    ███▄▄█▀   ▐██▀ ▀ ▀██▌ ▀ ▄██ ▀  ██ :      
+              │ ███  ███▀▀   ███ ▀██▄  ███     ███ █  ██ ▄██▀  |
+        ┌─────┘ ▀▀▀  ▀▀▀     ▀▀▀   ▀▀▀ ▀▀▀     ▀▀▀  ▀▀▀  ▀▀▀▀▀ └─────┐
+        │  α ▄▀▀▄ ▄▀▀▄    ██▀▀▄ ██ ▀▀▀█▄ FLAT ΓεAL MODε DOS-εXTε∩DεΓ │
+        |      ▀█  ▄█▀ ▄  ██▀▀▄ ██    ██                             │
+        :    ▀▄▄▀ ██▄▄    ▀▀▀▀  ▀▀    ▀▀ ßy CHΓìSTOPHε AVOì∩∩ε 95-96 |
+        ·                                                            :
+                             »»» VεΓSION 1.0 «««
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│                          ┌────────────────────┐                          │
+│              ┌■──────────┤ iF R M 3 2 . T X T ├───────────┐              │
+└──────────────┤           └────────────────────┘           ├──────────────┘
+               │                Version 1.00                │
+               │                                            │
+               │  DOCUMENTATION SUR LE DOS-EXTENDER iFΓM32  │
+               │ ────────────────────────────────────────── │
+               │    (C) Christophe AVOINNE, 1995 - 1996     │
+               └────────────────────────────────────────────┘
+
+ ──────────────────────────────────────────────────────────────────────────    
+
+  Contenu:▄
+   ▀▀▀▀▀▀▀▀
+	∙ iFΓM32.TXT   Ce fichier
+	∙ iFΓM32.ASM   Fichier-source du DOS-extender iFΓM32
+	∙ iFΓM32.ASI
+	∙ iFΓM32.EXE   Fichier-exécutable du DOS-extender iFΓM32
+  ∙ SERVICES.TXT Documentation sur les services offerts par iFΓM32
+  
+ ──────────────────────────────────────────────────────────────────────────    
+  
+  Caractéristiques générales:▄
+   ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  ∙ Le fichier iFRM32.EXE est  utilisable pour toutes applications s'exécu-
+    tant en code 32-bit dans le mode réel plat.                            
+  ∙ Ne peut  être  utilisé  qu'en mode réel, non en mode virtuel ni en mode
+    protégé (Windows, VCPI et DPMI);  un  gestionnaire EMM386 ou compatible
+    ne doit pas être chargé.                                               
+  ∙ Les applications  iFΓM32  accèdent  pleinement  au BIOS  et  au DOS  en
+    utilisant  les même conventions d'appel  au BIOS  et  au DOS ( INT xx )
+    que les applications DOS normaux,  à quelques exceptions près : la pile
+    du code 32-bit se doit d'être en 16-bit pour tous les passages de para-
+    mètres par la pile ( rares sont les interruptions qui en font usage ).   
+  ∙ Les sources C  peuvent être utilisés avec iFΓM32,  sous réserve d'avoir
+    un compilateur C 32-bit en main et d'apporter  quelques modifications à
+    aux sources obtenus en assembleur.                                     
+	∙ A l'inverse de bien d'autres DOS extenders,  la problématique de la ré-
+	  entrance NE se pose PAS sous iFΓM32. Elle ne sera donc discutée dans ce
+	  fichier.                            
+
+ ──────────────────────────────────────────────────────────────────────────    
+
+  Historique:▄
+   ▀▀▀▀▀▀▀▀▀▀▀
+  
+  1°) Pourquoi iFΓM32 ?
+
+   Certaines personnes  soutenaient  à tort  que  les "DOS Extender 32-bit"
+  en mode protégé  fussent  le seul moyen possible  pour  exécuter  un code
+  32-bit dans un modèle de mémoire « plat ». Il était rageant d'entendre de
+  pareils propos,  alors même  qu'aucun  n'était à même de le prouver. Bien
+  que j'eus par moment douter, j'ai  toujours cru à la possibilité de créer
+  un vrai « DOS Extender 32-bit » en mode réel. Voilà pourquoi iFΓM32 a été
+  conçu au départ.                             
+
+  Le mode virtuel est, par nature, lent.  très lent, même : l'exécution des
+  interruptions en mode virtuel provoquent un retour obligé en mode protégé
+  pour repasser  en mode virtuel  par le biais d'un moniteur virtuel. Cette
+  opération  est  très coûteuse en cycles - et, pour ma part, mal étudiée -
+  pour les IRQ! Pis, tous les INT imbriqués les uns dans les autres doivent
+  être émulés  par  le moniteur  dans la famille des 386 et 486. Certes, le
+  mode virtuel offre l'avantage non-négligeable de la pagination. Mais tous
+  les DOS extenders 32-bit ne l'offrent pas systématiquement.
+  
+  Le multi-tâche ?  honnêtement, si  une  application  iFΓM32  a réellement
+  besoin de puissance et de ressources  et  qu'elle  n'est  pas  destinée à
+  tourner dans un contexte multi-tâche,  cela ne ferait que de la ralentir.
+
+  En outre, pour que le multi-tâche fût efficace, il aurait fallu impérati-
+  vement passer par la pagination,  ce que  le mode réel  ne peut hélas pas
+  offrir, du moins avec les pentiums ( l'instruction non-documentée LOADALL
+  n'est en effet plus disponible à partir des pentiums,  et de toute façon,
+  cette instruction est extrêmement mal habile à utiliser ).
+
+  Autre fait  qui  empêche  d'opter  pour le mode virtuel : l'impossibilité
+  d'aggrandir les limites des segments  à 4 Go  ou même  de passer  du code
+  16-bit en 32-bit et vice versa sous le mode virtuel ( le microprocesseur,
+  juste avant de passer en mode virtuel  via " iretd " se charge de redéfi-
+  nir les limites, les bases, etc. de tous les registres de segment,  et ce
+  sans passer par la GDT!  cela  signifie des segments avec, désespèrement,
+  64 Ko en limite,  et un DPL égale à trois  qui empêche toute tentative de
+  redéfinir ces registres ).
+  
+  Or précisement,  un  certain  nombre de DOS-extenders  n'utilisent pas la
+  pagination : alors, pourquoi en mode protégé? surtout, si un DOS-extender
+  32-bit en mode réel  peut se révéler justement plus rapide  et  plus aisé
+  à l'utilisation que la plupart des DOS-extenders "traditionnels".
+  
+  Par la  suite,  iFΓM32  a  été  conçu  pour permettre  à  n'importe  quel
+  programmeur  habitué au DOS et au BIOS, de pourvoir écrire ses programmes
+  et de les exécuter  dans le code souhaité,  et  de lui  permettre l'accés
+  à l'espace de mémoire tout entier du PC (4 Go au maximum),  plus aisement
+  qu'il  ne  l'aurait fait  en mode protégé  ( problème de conversion entre
+  sélecteur et segment, par exemple ).
+
+  2°) Qu'est-ce iFΓM32 ?
+
+  iFΓM32  signifie  " INTEL FLAT REAL MODE 32-BIT ",  et  il est conçu pour                       
+  pouvoir  exécuter  des  code 32-bit  en mode réel,  tout  en assurant une                       
+  compatibilité la meilleure que possible avec le DOS et le BIOS du PC.                          
+                                                                                               
+  Il se présente  sous  la  forme  d'un  fichier-exécutable que  l'on peut                       
+  installer après HIMEM.SYS  dans  CONFIG.SYS ( INSTALL= <..>\iFRM32.EXE )                       
+  ou l'appeler  sous  DOS  pour l'installer et l'activer soit en résident,
+  soit le temps d'exécuter une application iFΓM32.
+  
+ ──────────────────────────────────────────────────────────────────────────    
+
+  Comment utiliser iFΓM32 ?▄
+   ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+	■ L'accès aux fonctionnalités de iFΓM32  s'effectue à travers les inter-
+	  ruptions 2Fh, A8h-B3h :
+
+                                                                          
+    - int 2Fh, AX = 43FFh: uniquement utilisable  en  code 16-bit, atteste
+    de la présence de iFΓM32  en  envoyant  6945524Dh  " iFRM "  dans EAX,
+    " 32CÆ " dans EDX et dans le couple ES:EBX  un  pointeur  sur la table
+    suivante, après initialisation de l'iFΓM32 : 
+                                                                          
+          ATTENTION : cet appel doit se faire avant tout autre appel       
+          des interruptions de iFΓM32 !
+          
+    NOTE : évitez d'utiliser au possible cette table directement, elle est
+    encore accessible  uniquement  pour des raisons  de compatibilité avec
+    les « anciennes » applications d'iFΓM32  et priviligiez les appels aux
+    fonctions de services offert par iFΓM32 via l'interruption 0B0h !
+                                                                          
+     ╔═════════╤══════════════════════════════════════════════╤══════════╗
+     ║ Adresse │ Contenu                                      │   Type   ║
+     ╠═════════╪══════════════════════════════════════════════╪══════════╣
+     ║ + 0000h │ Attribut/état du gestionnaire:               │ 4 BYTES  ║
+     ║         │ - bit 31: à un si présent;                   │          ║
+     ║         │ - bit 30: à un  si  un  gestionnaire XMM est │          ║
+     ║         │   présent (HIMEM.SYS);                       │          ║
+     ║         │ - bit 29: à un si la ligne d'adresse A20 n'a │          ║
+     ║         │   pas pu être libérée;                       │          ║
+     ║         │ - les autres bits sont réservés.         !!! │          ║
+     ╟─────────┼──────────────────────────────────────────────┼──────────╢
+     ║ + 0004h │ Nombre d'applications iFRM32 en cours    !!! │ 1 DWORD  ║
+     ╟─────────┼──────────────────────────────────────────────┼──────────╢
+     ║ + 0008h │ Numéro de version                        !!! │ 1 WORD   ║
+     ╟─────────┼──────────────────────────────────────────────┼──────────╢
+     ║ + 000Ah │ Taille de la GDT, utilisée par iFΓM32    !!! │ 1 WORD*  ║
+     ╟─────────┼──────────────────────────────────────────────┼──────────╢
+     ║ + 000Ch │ Adresse linéaire de base de la GDT****   !!! │ 1 DWORD* ║
+     ╟─────────┼──────────────────────────────────────────────┼──────────╢
+     ║ + 0010h │ Taille de la IDT16, utilisée par iFΓM32:     │ 1 WORD*  ║
+     ║         │ la IDT16 est la table d'interruptions 16-bit │          ║
+     ╟─────────┼──────────────────────────────────────────────┼──────────╢
+     ║ + 0012h │ Adresse physique de base de la IDT16***      │ 1 DWORD* ║
+     ╟─────────┼──────────────────────────────────────────────┼──────────╢
+     ║ + 0016h │ Taille de la IDT32, utilisée par iFΓM32:     │ 1 WORD*  ║
+     ║         │ la IDT32 est la table d'interruptions 32-bit │          ║
+     ╟─────────┼──────────────────────────────────────────────┼──────────╢
+     ║ + 0018h │ Adresse physique de base de la IDT32***      │ 1 DWORD* ║
+     ╟─────────┼──────────────────────────────────────────────┼──────────╢
+     ║ + 001Ch │ Addresse logique de la pile 16-bit           │ 2 DWORD**║
+     ╟─────────┼──────────────────────────────────────────────┼──────────╢
+     ║ + 0024h │ Addresse logique de la pile 32-bit           │ 2 DWORD**║
+     ╟─────────┼──────────────────────────────────────────────┼──────────╢
+     ║   ...   │                     ...                      │   ...    ║
+     ╚═════════╧══════════════════════════════════════════════╧══════════╝
+                                                            
+  !!! N'Y TOUCHEZ PAS SANS RAISON PARTICULIERE !
+                                                                          
+    * à ne manipuler qu'avec précaution par des programmeurs avertis!     
+   ** le premier double-mot désigne un offset 32-bit, le second un segment
+  *** il s'agit des IDTP 16-bit et 32-bit  qu'iFΓM32  utilise pour pointer
+      sur la bonne table des interruptions                                
+ **** il s'agit de la GDT qu'iFΓM32 utilise pour initialiser les registres
+      de segments; N'Y TOUCHEZ PAS SANS RAISON PARTICULIERE !              
+                                                                          
+     - int 0A8h , "CS16" : passe en code 16-bit si et seulement si le code
+     en cours est un code 32-bit.                                         
+                                                                          
+     - int 0A9h , "CS32" : passe en code 32-bit si et seulement si le code
+     en cours est un code 16-bit.                                         
+                                                                          
+     - int 0AAh~0ABh : RESERVEES, ne pas y toucher!                                     
+                                                                          
+     - int 0ACh , "SS16" : utilise la pile 16-bit pour le code en cours. 
+                                                                          
+     - int 0ADh , "SS32" : utilise la pile 32-bit pour le code en cours.  
+                                                                          
+     - int 0AEh~0AFh: RESERVEES, ne pas y toucher!                        
+                                                                          
+     - int 0B0h: services divers qu'offre iFΓM32.                         
+       voir le fichier SERVICES.TXT pour de plus amples détails.
+
+     - int 0B1h: initialise une zone de mémoire pour le préparer
+       à héberger un «tas» ( gestion de mémoire dynamique ).
+       ·Entrée:
+         ds:eax = adresse de base de la zone.
+         ecx = taille en octet de la zone ( multiple de 32 octets).
+       ·Sortie:
+         ds:ebx = adresse qui détermine le «tas» crée dans la zone.
+                           
+		 - int 0B2h: alloue un bloc dans un «tas» spécifié.
+       ·Entrée:
+         ds:ebx = adresse du «tas» spécifié.
+         eax = taille en octet du bloc.
+       ·Sortie:
+       si cf = 0,
+         ds:eax = adresse qui détermine le «tas» crée dans la zone.
+		 
+		 - int 0B3h: libère un bloc dans un «tas» spécifié.
+       ·Entrée:
+         ds:ebx = adresse du «tas» spécifié.
+         eax = adresse du bloc.
+       ·Sortie:
+       si cf = 0, ok.
+     
+       
+ ──────────────────────────────────────────────────────────────────────────    
+
+  Description et techniques:▄
+   ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+
+   a) Ce qu'il faut savoir:                                                 
+                                                                          
+      Le registre de segment CS  contient  dans  sa  partie invisible, des
+      informations sur  son  adresse linéaire de base, sa limite, son type
+      et niveau de privilège ( ici, toujours code non-conforme, lisible et
+      de niveau de privilège 0 - i.e, aucune restriction sur l'utilisation
+      de certaines instructions - ET, bien sûr,  le bit D qui indique s'il
+      faut exécuter par défaut le code comme un 16-bit - D=0 - ou comme un
+      32-bit - D=1 ).  A l'initialisation de iFΓM32, la limite de tous les
+      registres de segment est étendue à 4 Go,  pour permettre l'accès via
+      ces registres  dans  tout  l'espace physique  de  l'ordinateur, lors
+      des référence-mémoires.  C'est  donc  en  manipulant ce bit D, qu'on
+      parvient à exécuter un code 32-bit en mode réel.                    
+                                                                          
+      Par ailleurs,  l'exécution des bonnes interruptions selon le code en
+      cours est due au registre IDTR,  qui permet de pointer sur une table
+      d'interruption compatible  avec  le  code en cours; le changement de
+      table s'effectue avec le chargement du registre IDTR, " lidt ",  qui
+      ne prend qu'une dizaine de cycles: qui a dit que le mode reél n'uti-
+      lisait pas l'IDTR, pour accéder aux vecteurs des interruptions?     
+                                                                          
+
+   b) Les interruptions avec iFΓM32:                                        
+                                                                          
+      iFΓM32 offre trois tables  de vecteurs d'interruption  selon le mode
+      du code en vigueur:                                                    
+      - deux 16-bit : c'est celles qu'en fait offrent le BIOS et le DOS en
+      temps normal;  l'une  peut  servir  pour  émuler  des  interruptions
+      16-bits qui ont besoin d'une pile 16-bit  ( DOS et BIOS ) lorsque le
+      code 16-bit utilise par défaut une pile 32-bit.
+      - une 32-bit : c'est une autre table qui émule les interruptions in-
+      ternes  ( DOS, BIOS, par exemple )  et les IRQ.                                
+                                                                          
+      Les entrées  de ces tables  peuvent  être  détournées aux profits de
+      "handlers"  propres  aux  programmeurs  d'applications  iFΓM32. Mais
+      attention,  si ces "handlers"  doivent pouvoir s'exécuter aussi bien
+      en code 16-bit qu'en 32-bit,  il faut modifier les deux entrées dans
+      les deux tables,  en particulier  si ce sont des IRQ.  Et  dans  les
+      trois tables, si on autorise au code 16-bit l'accès à la pile 32-bit
+      dans certains cas.              
+                                                                          
+      Voici  comment  faire,  par  exemple  pour  installer  un  "handler"
+      IRQ 32-bit ( ici, le « TIMER » ), dans un segment 32-bit :           
+                                                                          
+        NOTE : le code 16-bit n'a pas accès à la pile 32-bit, donc deux
+        tables suffisent.                                                                  
+                                                                          
+      ...                                                                 
+      IRQ·8·16:    int    0A9h    ; passe en code 32-bit                  
+                   call   IRQ·8                                           
+                   int    0A8h    ; passe en code 16-bit                  
+                   iretw          ; exécute un «iret» 16-bit              
+      IRQ·8·32:    call   IRQ·8                                           
+                   iretw          ; exécute un «iret» 16-bit
+                                  ; même sous un code 32-bit                                        
+      IRQ·8:       ...            ; le "handler" IRQ en 32-bit            
+                   retn                                                   
+      ...                                                                 
+                                                                          
+      où: IRQ·8·16  est le vecteur  pour la table 16-bit, et IRQ·8·32 pour
+          la table 32-bit.                                                
+                                                                          
+      ...                                                                 
+      install·our·handlers:
+                   ; \\ la sous-fonction 6 se sert de la valeur de DS
+                   ; \\ en entrée pour calculer les offsets de ESI et
+                   ; \\ EDI en sortie ( adresses des tables ).                                                     
+                   mov    ah,6             ; « GET IDT »                  
+                   int    0B0h             ; iFΓM32 service               
+                   mov    eax,cs                                          
+                   shl    eax,16                                          
+                   mov    edx,eax                                         
+                   mov    ax,SMALL OFFSET IRQ·8·16                        
+                   mov    dx,SMALL OFFSET IRQ·8·32                        
+                   cli                                                    
+                   xchg   eax,4*8[esi]     ; 4*8 est l'offset du handler
+                   xchg   edx,4*8[edi]     ; à détourner dans les tables  
+                   sti                     ; d'interruptions              
+                   mov    old·IRQ·8·16,eax                                
+                   mov    old·IRQ·8·32,edx                                
+                   ...                                                    
+                   retn                                                   
+      ...                                                                 
+                                                                          
+    │ ATTENTION:  dû fait que l'interprétation des entrées d'un IDT pointé
+    │ par le registre IDTR  ne dépend que  du  mode en cours du processeur
+    │ ( protégé, réel, ou virtuel ) et  NON du type  de  code  par  défaut
+    │ ( 16-bit ou 32-bit ), la table d'interruption  du  mode réel, que le
+    │ code s'exécute en 16-bit ( par défaut pour le DOS et le BIOS ) ou en
+    │ 32-bit, est identique : les entrées de cette table occupent toujours
+    │ 4 octets; le  premier  mot décrivant l'offset 16-bit, et le deuxième
+    │ mot le segment 16-bit du vecteur d'interruption.                    
+                                                                          
+    │ CONSEQUENCE:  NE placez JAMAIS des routines d'interruption en dehors
+    │ du premier 64 Ko d'un segment code.  D'une manière générale,  N'exé-
+    │ cutez PAS du code 32-bit en-dehors de la limite de 64 Ko de segment,
+    │ s'il fait appel aux interruptions internes  ou  si les interruptions
+    │ externes ne sont pas désactivées!  
+                                                                          
+    │ Par ailleurs,  si vous comptez utiliser une pile 32-bit avec du code
+    │ 16-bit,  il vous faudra redéfinir les  IRQ  sans quoi celles du BIOS
+    │ ou d'autres programmes résidents peuvent « planter » la machine.    
+    │ En effet,  celles-ci  sont censées utiliser une pile 16-bit avec des
+    │ références externes. Il vous faudra donc réécrire les  IRQ  en sorte
+    │ que ces dernières  appellent celles du BIOS après avoir commuté dans
+    │ une pile 16-bit. Vaste perspective...                               
+                                                                          
+   
+   c) Les restrictions pour l'application iFΓM32:                           
+                                                                            
+      - Puisque qu'une application 32-bit  doit  pouvoir utiliser une pile
+      32-bit, i.e, dont la taille excède 64 Ko, iFΓM32 se charge d'assurer
+      la commutation d'un code 16/32-bit  à un autre en mémorisant la pile
+      de  l'ancien  code  et  en  restaurant  la  pile  du  nouveau  code;
+      de ce fait,  le code 16-bit  est  assuré de travailler avec une pile
+      dont ESP n'excède pas 64 Ko, et le code 32-bit  avec  une vraie pile
+      32-bit.  Notez toutefois que même  sous un  code 16-bit, la pile est
+      reconnue comme étant en 32-bit (ESP utilisé et non SP, bit B = 1).  
+      Par conséquence,  il  faut  veiller à ne pas commuter d'un code à un
+      autre  si  des  paramètres doivent être passés dans la pile,  car le
+      nouveau code  serait  incapable  d'y accéder.  Une solution possible
+      serait de commuter d'abord, puis d'empiler les paramètres,  et enfin
+      d'appeler la routine en question. Une autre est de demander à passer
+      d'une pile à une autre:                                             
+                                                                          
+      Exemple: L'accès à l'interruption " service16 " fonctionnant en code
+      16-bit, exigeant trois paramètres passés dans la pile du code 16-bit
+      est impossible à partir d'un code 32-bit  avec  sa  pile 32-bit.    
+                                                                          
+ 	           .USE32                                                       
+ 	           ...                                                          
+ 	           push  paramater1                                             
+ 	           push  paramater2                                             
+ 	           push  paramater3                                             
+ 	           int   service16  <── CRRAAAAASHH!!! (16-bit)                 
+ 	           ...                                                          
+ 	                                                                        
+ 	    En revanche, elle est possible pour un code 32-bit avec une pile 16-
+ 	    bit, comme c'est le cas ici:                                        
+ 	           ...                                                          
+ 	           int   0ACh        ; utilise la pile du code 16-bit           
+ 	           push  paramater1                                             
+ 	           push  paramater2                                             
+ 	           push  paramater3                                             
+ 	           int   service16  <── OKKKK!!!                                
+ 	           int   0ADh        ; reprend la pile du code 32-bit           
+ 	           ...                                                          
+ 	                                                                        
+ 	    Fort heureusement, ces cas sont très rares, car ni le DOS ni le BIOS
+ 	    ne font appel à la pile pour l'envoi des paramètres.            
+ 	                                                                        
+ 	                                                                        
+ 	    - Plusieurs segments  de  code  et  de  données peuvent cohabiter en
+ 	    16-bit ou en 32-bit. Il faudra juste veiller à exécuter le  bon code
+ 	    avec le bon segment,  et  à  accéder  aux bonnes données avec le bon
+ 	    adressage.                                                          
+ 	                                                                        
+ 	    - Le code doit impérativement se trouver dans les premiers 64 Ko des
+ 	    segments de code ( rien n'interdit d'en n'avoir plusieurs ).  Sinon,
+ 	    chaque  fois  que  EIP  excèdera 65535, il faudra s'assurer qu'aucun
+ 	    IRQ, aucune interruption ou exception n'ait lieu; i.e, flag IF = 0. 
+ 	    Autrement, les segments de données peuvent excéder les 64 Ko.       
+ 	                                                                        
+ 	    - Pour une raison bien déterminée, iFΓM32  ne supporte pas le mécha-
+ 	    nisme  de  la  pagination : le  mode réel  l'interdit  en  principe.
+ 	    Bien qu'il existerait une possibilité par le biais d'une instruction
+ 	    non documentée " loadall ", elle est, d'une part, très  coûteuse  en
+ 	    cycles ( sans compter,  la nécessité de remettre à jour  beaucoup de
+ 	    registres, etc.), et,  d'autre  part, elle  n'est  plus  implémentée
+ 	    à partir des pentiums: l'astuce se révèlerait en faite infructueuse,
+ 	    puisqu'après tout, il s'agit de faire un DOS-extender 32-bit en mode
+ 	    réel qui soit justement plus  aisé  d'utilisation que la plupart des
+ 	    DOS-extenders "traditionnels" (en mode virtuel)  et  plus  rapide si
+ 	    possible.                                                           
+ 	                                                                          
+
+ ──────────────────────────────────────────────────────────────────────────    
+
+  Conclusion:▄
+   ▀▀▀▀▀▀▀▀▀▀▀
+
+» Cette version d'iFΓM32 ne permet pas d'exploiter une pile 32-bit dans un
+  code 16-bit sans quelques précautions comme de désactiver les IRQ  ou de
+  les réécrire pour utiliser la pile 32-bit; cela permettrait aux program-
+  meurs s'ils le désirent,  d'écrire des routines en code 16-bit qui pour-
+  ront accéder à la pile 32-bit du code 32-bit.  Bien entendu,  les inter-
+  ruptions qui ne  seront  pas  du  crû  du programmeur, quant à eux,  de-
+  vront être " détournées "  pour  assurer la transition d'une pile 32-bit
+  vers la pile 16-bit pour leur bon fonctionnement et vice-versa pour leur
+  retour à l'appelant. Pour cela, il vous faudra utiliser les trois tables
+  d'interruption de iFΓM32 au lieu de deux par défaut.                                                    
+» Bien qu'en  principe  le  DOS  et  le  BIOS n'utilise guère la pile pour
+  les  passages  des  paramètres,  il existe  cependant  un certain nombre
+  de logiciels qui  utilisent  des  interruptions  ou  des "call far" avec
+  passage des paramètres via la pile.  Une solution à ce genre de problème
+  a été donné plus haut  mais  imposerait  au programmeur de constituer un
+  ensemble de routines  qui aurait pour tâche de gérer ces particularités.                                                          
+
+                          ·∙««« FIN DE FICHIER »»»∙·
+
+   
+   
+   
+   
+   
