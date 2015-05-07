@@ -1,0 +1,108 @@
+﻿┌──────────────────────────────────────────────────────────────────────────────┐
+│                          ┌─────────────────────┐                             │
+│              ┌■──────────┤ H P A T C H . T X T ├────────────┐                │
+└──────────────┤           └─────────────────────┘            ├────────────────┘
+               │                Version 1.00                  │
+               │                                              │
+               │  DOCUMENTATION SUR LE «FILE PATCHER» HPatch  │
+               │ ───────────────────────────────────────────  │
+               │     par Christophe AVOINNE, Janvier 96       │
+               └──────────────────────────────────────────────┘
+
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                                                                              │
+│   0 - Contenu                                                                │
+│   I - Introduction                                                           │
+│  II - Utilisation                                                            │
+│ III - Conclusion                                                             │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+┌ 0 - Contenu: ────────────────────────────────────────────────────────────────┐
+│                                                                              │
+│     ∙ HPatch.TXT   Ce fichier                                                │
+│     ∙ HPatch.ASM   Fichier-source du « huge files patcher » HPatch           │
+│     ∙ HPatch.COM   Fichier-exécutable du « huge files patcher » HPatch       │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+┌ I ─ Introduction: ───────────────────────────────────────────────────────────┐
+│                                                                              │
+│    HPatch est un utilitaire qui inclut des parties de fichiers dans un autre │
+│  fichier.  Cela permet,  par exemple,  à un programme exécutable de contenir │
+│  en son flanc des données brutes, telles que des images, des sons, etc. sans │
+│  avoir à les traiter dans le source  ( i.e, sans avoir à les " transformer " │
+│  pour pouvoir les inclure dans le source ).                                  │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+┌ II ─ Utilisation: ───────────────────────────────────────────────────────────┐
+│                                                                              │
+│    HPatch s'utilise comme un " post-processeur ":  l'inclusion  devant avoir │
+│  lieu après l'assemblage et l'édition des liens, i.e quand un exécutable est │
+│  obtenu.  Il  n'est  pas  nécessaire  que  le  fichier  à  modifier  soit un │
+│  exécutable,  et  peut donc être n'importe quel fichier contenant des " mar- │
+│  queurs " - ou signatures - qui informent sur le nom du fichier où se trouve │
+│  le bloc à inclure, sur la position et la taille de ce dernier.  L'inclusion │
+│  du bloc se fait à partir de l'endroit où se trouve le marqueur: il est donc │
+│  important de reserver de l'espace suffisant juste après le marqueur dans le │
+│  fichier  à  modifier  en  sorte  que  HPatch  puisse  y  recopier  le bloc. │
+│  Le marqueur sera effacé par le bloc.                                        │
+│                                                                              │
+│    Enfin,  sachez  que n'importe quel bloc à inclure peut également contenir │
+│  en son sein des " marqueurs "  :  ceux-là seront aussi traités. Prenez donc │
+│  garde de ne pas créer des situations à risque  où  votre  fichier  pourrait │
+│  prendre des  allures  pantagruéliques! ( ça fait toujours drôle de voir son │
+│  disque dur de 2 Go afficher déjà complet! )                                 │
+│                                                                              │
+│    Syntaxe d'utilisation de HPatch:                                          │
+│                                                                              │
+│  HPatch [chemin]nom du fichier à « patcher »[.extension]                     │
+│   où le fichier à « patcher »  est le fichier à modifier contenant le ou les │
+│   marqueurs "HPatch " suivi du nom du fichier à inclure partiellement: après │
+│   le nom du fichier,  un  double-mot  indique  à  partir  de  quelle adresse │
+│   logique du fichier commence le bloc à inclure  dans le fichier à modifier; │
+│   un autre-double mot  vient à la suite  pour  indiquer  le  nombre  d'octet │
+│   à recopier.  Le chemin  et  l'extension  sont  facultatifs.  Par ailleurs, │
+│   si l'extension est omise, « .exe » est prise par défaut.                   │
+│                                                                              │
+│   Voici un exemple de source contenant deux marqueurs:                       │
+│                                                                              │
+│ DATA        SEGMENT USE32                                                    │
+│             ...                                                              │
+│ palette     DB  "HPatch d:\img\papillon.img",0   ; fichier contenant le bloc │
+│             DD  0                                ; position du bloc à copier │
+│             DD  768                              ; longueur du bloc à copier │
+│             DB  768 - ($ - OFFSET palette) DUP(?); réserve de la place...    │
+│             ...                                                              │
+│ LNG         EQU 640*480                          ; taille de l'image         │
+│ picture     DB  "HPatch d:\img\papillon.img",0   ; fichier contenant le bloc │
+│             DD  768                              ; position du bloc à copier │
+│             DD  LNG                              ; longueur du bloc à copier │
+│             DB  LNG - ($ - OFFSET picture) DUP(?); réserve de la place...    │
+│             ...                                                              │
+│ DATA        ENDS                                                             │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+┌ III ─ Conclusion: ───────────────────────────────────────────────────────────┐
+│                                                                              │
+│  Pour ceux qui croit reconnaître RPatch en HPatch:                           │
+│                                                                              │
+│    Bien qu'il  ait  été  entièrement recodé par moi, il n'en reste pas moins │
+│  inspiré de RPatch de Rixed. C'est donc à lui que l'on doit la "philosophie" │
+│  de HPatch.  Cependant, j'ai volontairement dépouillé HPatch des options que │
+│  RPatch offrait normalement et ajoutai ce qui manquait le plus : la possibi- │
+│  lité d'inclure un bloc de plus de 64 Ko à la demande d'un seul marqueur!    │
+│                                                                              │
+│    HPatch, comme son illustre prédécesseur - RPatch, est entièrement codé en │
+│  100% pur porc-assembleur, voilà qui devrait ravir Jean-Pierre Koffe... :)   │
+│  et toujours comme son prédécesseur,  il est totalement gratuit et librement │
+│  diffusable.                                                                 │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
